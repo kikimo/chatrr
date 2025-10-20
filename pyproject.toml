@@ -9,6 +9,6 @@ dependencies = [
     "langchain-openai>=0.2.0",
     "langgraph>=0.2.0",
     "mcp>=1.18.0",
-    "openai>=2.4.0",
+    "openai>=2.5.0",
     "python-dotenv>=1.1.1",
 ]
