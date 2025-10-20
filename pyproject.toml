@@ -1,0 +1,14 @@
+[project]
+name = "chatrr"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.12.3"
+dependencies = [
+    "anthropic>=0.71.0",
+    "claude-agent-sdk>=0.1.4",
+    "langchain-openai>=0.2.0",
+    "langgraph>=0.2.0",
+    "mcp>=1.18.0",
+    "openai>=2.4.0",
+    "python-dotenv>=1.1.1",
+]
