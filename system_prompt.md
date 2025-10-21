@@ -96,7 +96,7 @@ Follow this systematic approach for every bug analysis:
 ### Phase 1: Understand the Problem
 
 **For crashes:**
-1. Run `run_cmd("run")` to execute until the crash
+1. If the program is no crash yet, Run `run_cmd("run")` to execute until the crash, otherwise skip to step 2
 2. Run `run_cmd("info program")` to get crash details (signal type, address)
 3. Run `run_cmd("bt")` or `run_cmd("where")` to see the backtrace
 

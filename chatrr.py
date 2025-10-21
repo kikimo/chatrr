@@ -4,105 +4,20 @@ Simple GDB Extension - Hello World
 This demonstrates the basics of writing a GDB extension in Python.
 """
 
-import sys
-import json
-import logging
-import os
-
-# Get current directory of this script
-scriptDir = os.path.dirname(os.path.abspath(__file__))
+import re, os, json, sys, logging
 
 # Get current Python version
+scriptDir = os.path.dirname(os.path.abspath(__file__))
 pythonVersion = f"{sys.version_info.major}.{sys.version_info.minor}"
 sys.path.insert(0, os.path.join(scriptDir, '.venv', 'lib', f'python{pythonVersion}', 'site-packages'))
 
+from openai import AzureOpenAI
+import dotenv
+
+# Get current directory of this script
+dotenv.load_dotenv(os.path.join(scriptDir, '.env'))
+
 import gdb
-from langgraph.prebuilt import create_react_agent
-from langchain_openai import AzureChatOpenAI
-from langchain_core.tools import tool
-from langchain_core.messages import SystemMessage, HumanMessage, AIMessage, ToolMessage
-from typing import TypedDict, Annotated
-import re
-
-def read_file(file_path: str, start_line: int, end_line: int) -> str:
-    """Read source code from a file between specified line numbers.
-
-    Args:
-        file_path: Path to the file to read
-        start_line: Starting line number (1-indexed)
-        end_line: Ending line number (1-indexed, inclusive)
-
-    Returns:
-        String containing the requested lines with line numbers
-    """
-    try:
-        with open(file_path, 'r') as file:
-            lines = file.readlines()
-            # Convert to 0-indexed
-            start_idx = max(0, start_line - 1)
-            end_idx = min(len(lines), end_line)
-
-            result = []
-            for i in range(start_idx, end_idx):
-                result.append(f"{i+1:4d}: {lines[i]}")
-            return ''.join(result)
-    except Exception as e:
-        return f"Error reading file: {str(e)}"
-
-def strip_ansi_codes(text: str) -> str:
-    """Strip ANSI color codes from text."""
-    ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
-    return ansi_escape.sub('', text)
-
-def run_cmd(cmd: str) -> str:
-    """Execute a GDB/RR command and return the output.
-
-    Args:
-        cmd: The GDB command to execute
-
-    Returns:
-        Command output as string
-    """
-    try:
-        # Debug: print GDB state before executing
-        print(f"[DEBUG] About to execute: {cmd}")
-        print(f"[DEBUG] Inferior state: {gdb.selected_inferior().is_valid()}")
-
-        # # Check if we're in rr replay
-        # try:
-        #     # In rr replay, check if program is already running
-        #     frame = gdb.selected_frame()
-        #     print(f"[DEBUG] Current frame exists, program state: running")
-        # except:
-        #     print(f"[DEBUG] No frame selected, program not started")
-        # import pdb; pdb.set_trace()
-        result = gdb.execute(cmd, from_tty=False, to_string=True)
-
-        print(f"[DEBUG] Command completed successfully")
-        # Strip ANSI color codes
-        return strip_ansi_codes(result)
-    except Exception as e:
-        print(f"[DEBUG] Exception occurred: {type(e).__name__}: {str(e)}")
-        return f"Error executing command '{cmd}': {str(e)}"
-
-class HelloWithArgsCommand(gdb.Command):
-    """A command that demonstrates argument handling"""
-
-    def __init__(self):
-        super(HelloWithArgsCommand, self).__init__("greet", gdb.COMMAND_USER)
-
-    def invoke(self, argument, from_tty):
-        """Handle the command with arguments"""
-        args = gdb.string_to_argv(argument)
-
-        if not args:
-            print("Usage: greet <name> [message]")
-            return
-
-        name = args[0]
-        message = " ".join(args[1:]) if len(args) > 1 else "Welcome!"
-
-        print(f"{message} {name}!")
 
 class XrunCommand(gdb.Command):
     """Execute gdb commands and log results to terminal"""
@@ -168,90 +83,7 @@ class XrunCommand(gdb.Command):
 # Register the command when the script is loaded
 XrunCommand()
 
-# Register the commands
-HelloWithArgsCommand()
-
 print("GDB extension loaded! Try 'hello' or 'greet <name>'")
-
-# # Azure OpenAI configuration (hardcoded for GDB compatibility)
-# api_version = "2024-02-15-preview"
-# azure_deployment = "gpt-5"
-# azure_endpoint = "https://fzuwwl.openai.azure.com/"
-
-# try:
-#     llm = AzureChatOpenAI(
-#         azure_endpoint=azure_endpoint,
-#         openai_api_key=openai_api_key,
-#         azure_deployment=azure_deployment,
-#         api_version=api_version,
-#         max_tokens=None,
-#         timeout=None,
-#         max_retries=3,
-#     )
-# except Exception as e:
-#     print(f"Warning: Failed to initialize LLM: {e}")
-#     print("The 'analyze' command will not be available")
-#     llm = None
-
-# # Define tools for the agent
-# @tool
-# def gdb_command(cmd: str) -> str:
-#     """Execute any rr/gdb command and get the output. This is your primary tool for inspecting the program state.
-
-#     Common commands:
-#     - run: Run to crash/breakpoint
-#     - bt/where: Show backtrace
-#     - list: Show source code
-#     - print <var>: Print variable value
-#     - info locals: Show local variables
-#     - info args: Show function arguments
-#     - watch <var>: Set hardware watchpoint
-#     - reverse-continue: Run backwards to watchpoint
-#     - break <location>: Set breakpoint
-#     - other gdb/rr commands available
-#     """
-#     print(f"🔧 Executing: {cmd}")
-#     result = run_cmd(cmd)
-#     print(f"📋 Result:\n{result}")
-#     return result
-
-# @tool
-# def read_source_file(file_path: str, line_start: int, line_end: int) -> str:
-#     """Read source code from a file between specified line numbers.
-
-#     Use this to examine code context around crash locations, understand function
-#     implementations, and check for error handling logic.
-
-#     Args:
-#         file_path: Path to the source file
-#         line_start: Starting line number (1-indexed)
-#         line_end: Ending line number (1-indexed, inclusive)
-#     """
-#     print(f"📖 Reading: {file_path} lines {line_start}-{line_end}")
-#     result = read_file(file_path, line_start, line_end)
-#     print(f"📄 Content:\n{result}")
-#     return result
-
-# # Load system prompt
-# system_prompt_path = os.path.join(scriptDir, 'system_prompt.md')
-# try:
-#     with open(system_prompt_path, 'r') as f:
-#         system_prompt = f.read()
-# except FileNotFoundError:
-#     system_prompt = "You are a debugging assistant using Mozilla rr. Use the gdb_command and read_source_file tools to analyze bugs."
-
-
-import re
-import os
-import json
-from openai import AzureOpenAI
-
-scriptDir = os.path.dirname(os.path.abspath(__file__))
-
-api_version = "2024-02-15-preview"
-azure_deployment = "gpt-5"
-openai_api_key = ""
-azure_endpoint = "https://fzuwwl.openai.azure.com/"
 
 def read_file(file_path: str=None, start_line: int=None, end_line: int=None) -> str:
     if file_path is None or start_line is None or end_line is None:
@@ -295,7 +127,6 @@ def run_cmd(cmd: str=None) -> str:
     Returns:
         Command output as string
     """
-    import gdb
     try:
         # Debug: print GDB state before executing
         if cmd is None:
@@ -303,15 +134,6 @@ def run_cmd(cmd: str=None) -> str:
 
         print(f"[DEBUG] About to execute: {cmd}")
         print(f"[DEBUG] Inferior state: {gdb.selected_inferior().is_valid()}")
-
-        # # Check if we're in rr replay
-        # try:
-        #     # In rr replay, check if program is already running
-        #     frame = gdb.selected_frame()
-        #     print(f"[DEBUG] Current frame exists, program state: running")
-        # except:
-        #     print(f"[DEBUG] No frame selected, program not started")
-        # import pdb; pdb.set_trace()
         result = gdb.execute(cmd, from_tty=False, to_string=True)
 
         print(f"[DEBUG] Command completed successfully")
@@ -334,6 +156,11 @@ def call_function(tool_call):
         return str(result)
     else:
         return f"Unknown function: {function_name}"
+
+api_version = os.environ['AZURE_OPENAI_API_VERSION']
+azure_deployment = os.environ['AZURE_OPENAI_DEPLOYMENT_NAME']
+openai_api_key = os.environ['AZURE_OPENAI_API_KEY']
+azure_endpoint = os.environ['AZURE_OPENAI_ENDPOINT']
 
 class DebugAgent(object):
     def __init__(self) -> None:
@@ -427,11 +254,10 @@ class DebugAgent(object):
                 stream=False,
             )
 
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
         # for event in stream:
         #     pass
-        print(resp)
-
+        # print(resp)
 
 agent = DebugAgent()
 
