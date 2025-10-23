@@ -130,6 +130,7 @@ dependencies = [
     { name = "langgraph" },
     { name = "mcp" },
     { name = "openai" },
+    { name = "pygdbmi" },
     { name = "python-dotenv" },
 ]
 
@@ -141,6 +142,7 @@ requires-dist = [
     { name = "langgraph", specifier = ">=0.2.0" },
     { name = "mcp", specifier = ">=1.18.0" },
     { name = "openai", specifier = ">=2.5.0" },
+    { name = "pygdbmi", specifier = ">=0.11.0.0" },
     { name = "python-dotenv", specifier = ">=1.1.1" },
 ]
 
@@ -684,6 +686,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/20/c5/dbbc27b814c71676593d1c3f718e6cd7d4f00652cefa24b75f7aa3efb25e/pydantic_settings-2.11.0.tar.gz", hash = "sha256:d0e87a1c7d33593beb7194adb8470fc426e95ba02af83a0f23474a04c9a08180", size = 188394, upload-time = "2025-09-24T14:19:11.764Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/83/d6/887a1ff844e64aa823fb4905978d882a633cfe295c32eacad582b78a7d8b/pydantic_settings-2.11.0-py3-none-any.whl", hash = "sha256:fe2cea3413b9530d10f3a5875adffb17ada5c1e1bab0b2885546d7310415207c", size = 48608, upload-time = "2025-09-24T14:19:10.015Z" },
+]
+
+[[package]]
+name = "pygdbmi"
+version = "0.11.0.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/2a/d0/d386ad42b12b90e60293c56a3b793910f34aa21c63f7ddc8a857e498d458/pygdbmi-0.11.0.0.tar.gz", hash = "sha256:7a286be2fcf25650d9f66e11adc46e972cf078a466864a700cd44739ad261fb0", size = 24648, upload-time = "2023-01-29T16:10:55.65Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c8/4b/71df806f4d260ddf01f9e431f5a6538a4155db3ec84a131d7e087178c591/pygdbmi-0.11.0.0-py3-none-any.whl", hash = "sha256:f7cac28e1d558927444c880ed1e65da1a5d8686121a3aac16f42fb84d3ceb60d", size = 21258, upload-time = "2023-01-29T16:10:53.171Z" },
 ]
 
 [[package]]
